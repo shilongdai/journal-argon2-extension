@@ -54,7 +54,7 @@ final class Argon2AuthenticationManager implements AuthenticationManager {
 
 	@Override
 	public synchronized void setPassword(String arg0) {
-		argon2Hash = hasher.hash(6138, 500, 2, arg0);
+		argon2Hash = hasher.hash(16384, 500, 2, arg0);
 		this.password = arg0;
 		try {
 			Files.write(passwdFile.toPath(), argon2Hash.getBytes(StandardCharsets.US_ASCII), StandardOpenOption.CREATE,
