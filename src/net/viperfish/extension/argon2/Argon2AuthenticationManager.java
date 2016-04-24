@@ -9,6 +9,7 @@ import java.nio.file.StandardOpenOption;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import net.viperfish.journal.framework.AuthenticationManager;
+import net.viperfish.journal.framework.errors.CannotClearPasswordException;
 import net.viperfish.journal.framework.errors.FailToLoadCredentialException;
 import net.viperfish.journal.framework.errors.FailToStoreCredentialException;
 
@@ -25,12 +26,15 @@ final class Argon2AuthenticationManager implements AuthenticationManager {
 	}
 
 	@Override
-	public synchronized void clear() {
+	public synchronized void clear() throws CannotClearPasswordException {
 		try {
 			Files.write(passwdFile.toPath(), "".getBytes(StandardCharsets.US_ASCII), StandardOpenOption.CREATE,
 					StandardOpenOption.WRITE);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			CannotClearPasswordException cp = new CannotClearPasswordException(
+					"Cannot clear password in " + passwdFile.getAbsolutePath() + " message:" + e.getMessage());
+			cp.initCause(e);
+			throw cp;
 		}
 
 	}
@@ -41,19 +45,19 @@ final class Argon2AuthenticationManager implements AuthenticationManager {
 	}
 
 	@Override
-	public synchronized void reload() {
+	public synchronized void load() throws FailToLoadCredentialException {
 		try {
 			argon2Hash = new String(Files.readAllBytes(passwdFile.toPath()), StandardCharsets.US_ASCII);
 		} catch (IOException e) {
 			FailToLoadCredentialException fl = new FailToLoadCredentialException(
 					"Cannot load argon2 hash from file " + passwdFile + ": " + e.getMessage());
 			fl.initCause(e);
-			throw new RuntimeException(fl);
+			throw fl;
 		}
 	}
 
 	@Override
-	public synchronized void setPassword(String arg0) {
+	public synchronized void setPassword(String arg0) throws FailToStoreCredentialException {
 		argon2Hash = hasher.hash(16384, 500, 2, arg0);
 		this.password = arg0;
 		try {
@@ -63,7 +67,7 @@ final class Argon2AuthenticationManager implements AuthenticationManager {
 			FailToStoreCredentialException fc = new FailToStoreCredentialException(
 					"Cannot store argon2 hash to:" + passwdFile + " message:" + e.getMessage());
 			fc.initCause(e);
-			throw new RuntimeException(fc);
+			throw fc;
 		}
 	}
 

@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>net.viperfish</groupId>
 			<artifactId>journal.api</artifactId>
-			<version>3.0.0</version>
+			<version>4.2.1</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

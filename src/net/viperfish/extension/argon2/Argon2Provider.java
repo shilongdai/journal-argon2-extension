@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import net.viperfish.journal.framework.AuthenticationManager;
 import net.viperfish.journal.framework.ConfigMapping;
 import net.viperfish.journal.framework.Configuration;
+import net.viperfish.journal.framework.errors.FailToLoadCredentialException;
 import net.viperfish.journal.framework.provider.Provider;
 
 public final class Argon2Provider implements Provider<AuthenticationManager> {
@@ -14,10 +15,10 @@ public final class Argon2Provider implements Provider<AuthenticationManager> {
 	private Argon2AuthenticationManager auth;
 	private File passwdFile;
 
-	private void lazyLoad() {
+	private void lazyLoad() throws FailToLoadCredentialException {
 		if (auth == null) {
 			auth = new Argon2AuthenticationManager(passwdFile);
-			auth.reload();
+			auth.load();
 		}
 		return;
 	}
@@ -65,14 +66,22 @@ public final class Argon2Provider implements Provider<AuthenticationManager> {
 
 	@Override
 	public AuthenticationManager getInstance() {
-		lazyLoad();
+		try {
+			lazyLoad();
+		} catch (FailToLoadCredentialException e) {
+			throw new RuntimeException(e);
+		}
 		return auth;
 	}
 
 	@Override
 	public AuthenticationManager getInstance(String arg0) {
 		if (arg0.equals("Argon2")) {
-			lazyLoad();
+			try {
+				lazyLoad();
+			} catch (FailToLoadCredentialException e) {
+				throw new RuntimeException(e);
+			}
 			return auth;
 		}
 		return null;
