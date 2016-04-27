@@ -72,7 +72,6 @@ final class Argon2AuthenticationManager implements AuthenticationManager {
 	@Override
 	public synchronized boolean verify(String arg0) {
 		boolean result = hasher.verify(argon2Hash, arg0);
-		System.out.println("expected:" + argon2Hash);
 		if (result) {
 			this.password = arg0;
 		}
