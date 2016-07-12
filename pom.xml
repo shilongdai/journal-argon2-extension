@@ -28,6 +28,13 @@
 			<url>https://dl.bintray.com/phxql/maven</url>
 		</repository>
 	</repositories>
+	<properties>
+		<plugin.id>argon2-extension</plugin.id>
+		<plugin.class>net.viperfish.extension.argon2.Argon2AuthPlugin</plugin.class>
+		<plugin.version>1.0.0</plugin.version>
+		<plugin.provider>Shilong Dai</plugin.provider>
+		<plugin.dependencies />
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -35,15 +42,20 @@
 			<version>4.12</version>
 		</dependency>
 		<dependency>
-			<groupId>net.viperfish</groupId>
-			<artifactId>journal.api</artifactId>
-			<version>5.0.0</version>
+			<groupId>net.viperfish.journal</groupId>
+			<artifactId>api</artifactId>
+			<version>6.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.mkammerer</groupId>
 			<artifactId>argon2-jvm</artifactId>
 			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>ro.fortsoft.pf4j</groupId>
+			<artifactId>pf4j</artifactId>
+			<version>0.13.1</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -65,48 +77,70 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>unzip jar file</id>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<unzip src="target/${artifactId}-${version}.${packaging}"
+									dest="target/plugin-classes" />
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<descriptors>
+						<descriptor>
+							src/assembly.xml
+						</descriptor>
+					</descriptors>
+					<appendAssemblyId>false</appendAssemblyId>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attached</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.6</version>
+				<version>2.4</version>
 				<configuration>
 					<archive>
-						<index>true</index>
-						<manifest>
-							<addClasspath>true</addClasspath>
-						</manifest>
 						<manifestEntries>
-							<provider-class>net.viperfish.extension.argon2.Argon2Provider</provider-class>
-							<provider-type>auth</provider-type>
+							<Plugin-Id>${plugin.id}</Plugin-Id>
+							<Plugin-Class>${plugin.class}</Plugin-Class>
+							<Plugin-Version>${plugin.version}</Plugin-Version>
+							<Plugin-Provider>${plugin.provider}</Plugin-Provider>
+							<Plugin-Dependencies>${plugin.dependencies}</Plugin-Dependencies>
 						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
+
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.3</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					</execution>
-				</executions>
+				<artifactId>maven-deploy-plugin</artifactId>
 				<configuration>
-					<filters>
-						<filter>
-							<artifact>*:*</artifact>
-							<excludes>
-								<exclude>META-INF/*.SF</exclude>
-								<exclude>META-INF/*.DSA</exclude>
-								<exclude>META-INF/*.RSA</exclude>
-							</excludes>
-						</filter>
-					</filters>
-					<finalName>full-${project.artifactId}-${project.version}</finalName>
+					<skip>true</skip>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.12.4</version>
@@ -120,12 +154,10 @@
 					</execution>
 				</executions>
 				<configuration>
-					<skipTests>false</skipTests>
+					<skipTests>true</skipTests>
 				</configuration>
 			</plugin>
-
 		</plugins>
-
 	</build>
 
 	<organization>

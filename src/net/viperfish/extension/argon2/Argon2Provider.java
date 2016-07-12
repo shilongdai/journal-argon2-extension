@@ -8,9 +8,11 @@ import net.viperfish.journal.framework.AuthenticationManager;
 import net.viperfish.journal.framework.ConfigMapping;
 import net.viperfish.journal.framework.Configuration;
 import net.viperfish.journal.framework.errors.FailToLoadCredentialException;
-import net.viperfish.journal.framework.provider.Provider;
+import net.viperfish.journal.framework.provider.AuthProvider;
+import ro.fortsoft.pf4j.Extension;
 
-public final class Argon2Provider implements Provider<AuthenticationManager> {
+@Extension
+public final class Argon2Provider implements AuthProvider {
 
 	private Argon2AuthenticationManager auth;
 	private File passwdFile;
